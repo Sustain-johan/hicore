@@ -1,0 +1,68 @@
+<?php
+
+// Include the Guzzle library
+require 'vendor/autoload.php';
+
+// Use the Guzzle HTTP client
+use GuzzleHttp\Client;
+
+// Set the API endpoint URL
+$apiUrl = 'https://areskidsport.hicorecloud.se/WebShopApi/swagger/';
+
+// Set your API key and store ID
+$apiKey = 'YOUR_API_KEY';
+$storeId = 'YOUR_STORE_ID';
+
+// Create a new Guzzle HTTP client
+$client = new Client();
+
+// Set the initial value for the sinceversion parameter
+$sinceversion = 0;
+
+// Set a flag to track when all rows have been retrieved
+$allRowsRetrieved = false;
+
+// Initialize an array to store the rows
+$rows = [];
+
+// Loop until all rows have been retrieved
+while (!$allRowsRetrieved) {
+    // Set the request parameters
+    $requestParams = [
+        'headers' => [
+            // Set the API key as a request header
+            'api-key' => $apiKey,
+            // Set the content type as a request header
+            'Content-Type' => 'application/json',
+        ],
+        // Set the sinceversion parameter
+        'query' => [
+            'sinceversion' => $sinceversion,
+            'storeid' => $storeId,
+        ],
+    ];
+
+    // Send a GET request to the API
+    $response = $client->get($apiUrl, $requestParams);
+
+    // Get the response body
+    $responseBody = $response->getBody();
+
+    // Decode the response body from JSON
+    $responseData = json_decode($responseBody, true);
+
+    // Check if there are more rows to retrieve
+    if (empty($responseData['items'])) {
+        // No more rows to retrieve, set the flag to true
+        $allRowsRetrieved = true;
+    } else {
+        // Add the rows to the array
+        $rows = array_merge($rows, $responseData['items']);
+
+        // Update the sinceversion parameter with the latest version
+        $sinceversion = $responseData['latestversion'];
+    }
+}
+
+// The $rows array now contains all rows retrieved from the API
+

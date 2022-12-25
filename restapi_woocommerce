@@ -1,0 +1,16 @@
+<?php
+
+// Include the WordPress REST API client library
+require 'wp-api-client/wp-api-client.php';
+
+// Use the WordPress REST API client
+use WP_API_Client\WP_API_Client;
+
+// Set the WooCommerce REST API endpoint URL
+$apiUrl = 'https://your-store.com/wp-json/wc/v3/';
+
+// Set the WooCommerce consumer key and consumer secret
+$consumerKey = 'YOUR_CONSUMER_KEY';
+$consumerSecret = 'YOUR_CONSUMER_SECRET';
+
+// Set your

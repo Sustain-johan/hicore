@@ -46,36 +46,16 @@ $woocommerce = new Client(
  */
 function sync_data_from_hicore_api() {
   global $items_endpoint_url, $headers, $query_params, $client, $woocommerce;
-
-// Make the GET request to the items endpoint
+}
+  // Make the GET request to the items endpoint
   $response = $client->request('GET', $items_endpoint_url, [
     'headers' => $headers,
     'query' => $query_params
   ]);
 
-// Check the response status code
-  if ($response->getStatusCode() == 200) {
-    // Get the response body
-    $response_body = json_decode($response->getBody(), true);
-
-// Check if there are more pages of data
-$has_more_pages = isset($response_body['hasMorePages']) && $response_body['hasMorePages'];
-
-// Loop through the pages of data
-while ($has_more_pages) {
-
-// Set the since version for the next page
-    $query_params['sinceversion'] = $response_body['nextSinceVersion'];
-  
-// Make the GET request to the items endpoint
-    $response = $client->request('GET', $items_endpoint_url, [
-      'headers' => $headers,
-      'query' => $query_params
-    ]);
-  
-// Check the response status code
+    // Check the response status code
     if ($response->getStatusCode() == 200) {
-    // Get the response body
+      // Get the response body
       $response_body = json_decode($response->getBody(), true);
   
       // Check if there are more pages of data
@@ -289,3 +269,7 @@ while ($has_more_pages) {
         
         // Schedule the sync data from Hicore API function to run every 5 minutes
         wp_schedule_event(time(), 'minute_5', 'sync_data_from_hicore_api');
+        
+  
+           
+          

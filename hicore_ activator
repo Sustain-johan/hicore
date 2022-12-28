@@ -1,0 +1,8 @@
+<?php
+
+function hicore_activate() {
+  // Run the Composer install command
+  exec('composer install');
+}
+register_activation_hook(__FILE__, 'hicore_activate');
+

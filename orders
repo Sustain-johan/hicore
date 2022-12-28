@@ -1,0 +1,105 @@
+<?php
+
+// Include the WordPress REST API client library
+require 'wp-api-client/wp-api-client.php';
+
+// Use the WordPress REST API client
+use WP_API_Client\WP_API_Client;
+
+// Set the WooCommerce REST API endpoint URL
+$apiUrl = 'https://skidsportdev1.wpengine.com/wp-json/wc/v3/';
+
+// Set the WooCommerce consumer key and consumer secret
+$consumerKey = 'ck_1fe847a4cd94c927f9b44f993d34d9db9b9cb0ab';
+$consumerSecret = 'cs_792718431ab964de82500bedb38f611534f060f3';
+
+// Create a new WordPress REST API client
+$client = new WP_API_Client($apiUrl, $consumerKey, $consumerSecret);
+
+// Set the order data from the Hicore API
+$orderData = [
+    'number' => $apiValues['webShopOrderNumber'],
+    'date_created' => $apiValues['orderDateUTC'],
+    'customer' => [
+    'email' => $apiValues['contactDetails']['email'],
+    'first_name' => $apiValues['customer']['name'],
+    'last_name' => '', // Not provided in the Hicore API data
+    'phone' => $apiValues['contactDetails']['phone'],
+    ],
+    'billing' => [
+    'first_name' => $apiValues['customer']['name'],
+    'last_name' => '', // Not provided in the Hicore API data
+    'email' => $apiValues['customer']['email'],
+    'phone' => $apiValues['customer']['phone'],
+    'address_1' => $apiValues['customer']['billingAddress']['street'],
+    'address_2' => $apiValues['customer']['billingAddress']['extraLine'],
+    'city' => $apiValues['customer']['billingAddress']['city'],
+    'state' => '', // Not provided in the Hicore API data
+    'postcode' => $apiValues['customer']['billingAddress']['zipCode'],
+    'country' => $apiValues['customer']['billingAddress']['country'],
+    ],
+    'shipping' => [
+    'first_name' => $apiValues['customer']['name'],
+    'last_name' => '', // Not provided in the Hicore API data
+    'address_1' => $apiValues['customer']['shippingAddress']['street'],
+    'address_2' => $apiValues['customer']['shippingAddress']['extraLine'],
+    'city' => $apiValues['customer']['shippingAddress']['city'],
+    'state' => '', // Not provided in the Hicore API data
+    'postcode' => $apiValues['customer']['shipping Address']['zipCode'],
+    'country' => $apiValues['customer']['shippingAddress']['country'],
+    ],
+    'line_items' => [], // We'll add the order line items next
+    'payment_method' => $apiValues['paymentDetails']['paymentMethod'],
+    'payment_method_title' => $apiValues['paymentDetails']['paymentMethod'],
+    'status' => 'processing', // Set the initial order status to "processing"
+    'customer_note' => $apiValues['comment'],
+    ];
+        
+    // Add the order line items to the order data
+    foreach ($apiValues['orderLines'] as $orderLine) {
+    $productData = [
+    'name' => $orderLine['description'],
+    'sku' => $orderLine['itemNumber'],
+    'price' => $orderLine['netAmountExclVat'],
+    'quantity' => $orderLine['quantity'],
+    'tax_class' => '', // Not provided in the Hicore API data, so leave it empty
+    ];
+    $orderData['line_items'][] = $productData;
+    }
+        
+    // Send a POST request to the WooCommerce REST API to create the order
+    $response = $client->orders->create($orderData);
+        
+    // Check the response status code
+    if ($response->getStatusCode() == 201) {
+    // The order was successfully created
+    echo 'Order created successfully';
+    } else {
+    // There was an error creating the order
+    echo 'Error creating order: ' . $response->getStatusCode();
+    }
+        
+        
+    while (true) {
+        // Send a GET request to the WooCommerce REST API to retrieve the order status
+        $response = $client->orders->get($orderId);
+        $orderStatus = $response['status'];
+    
+        // Check if the order status has changed
+        if ($orderStatus != $previousOrderStatus) {
+            // The order status has changed, so update the previous order status and take any necessary action
+            $previousOrderStatus = $orderStatus;
+            if ($orderStatus == 'completed') {
+                // Order is completed, so do something (e.g. send a notification)
+            } elseif ($orderStatus == 'cancelled') {
+                // Order is cancelled, so do something (e.g. send a notification)
+            } else {
+                // Order status has changed to something else, so do something else (e.g. send a notification)
+            }
+        }
+    
+        // Wait for 1 minute before checking for updates again
+        sleep(60);
+    }
+    
+        
